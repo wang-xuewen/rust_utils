@@ -4,3 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+rsa = "0.7"     # RSA 加密库
+rand = "0.8"    # 随机数生成库
+base64 = "0.13" # 添加 base64 库的依赖
