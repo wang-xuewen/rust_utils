@@ -47,12 +47,13 @@ P0Ln2gG3F5wFIy3jbYDq7AOVHkzX+ZHmlbCzceOVWBsBtfy8sjxOfFcdVGHOKgQE
 P6fuBV/ohqqKDCwAGoA2RzIdkjtY6msWlwIDAQAB
 -----END RSA PUBLIC KEY-----"#;
 
-    let data = "Hello, RSA encryption!";
+    let data = "password";
 
     // 调用加密函数
     let encrypted_data = encrypt_data(public_pem_str, data);
     let encrypted_string = encrypted_data?;
     let encrypted_str = encrypted_string.as_str();
+    eprintln!("encrpted str:{}", encrypted_str);
 
     let decrypted_data = decrypt_data(private_pem_str, encrypted_str);
 
