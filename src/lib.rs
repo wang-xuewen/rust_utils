@@ -1,3 +1,5 @@
+mod easy_map;
+
 use rand::rngs::OsRng;
 use rsa::pkcs1::DecodeRsaPrivateKey;
 use rsa::pkcs1::DecodeRsaPublicKey;
