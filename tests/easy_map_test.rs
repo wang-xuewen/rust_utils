@@ -1,31 +1,46 @@
-// use std::time::Duration;
+// 引用 lib.rs 中导出的 easy_map 模块
+use rust_utils::easy_map::EasyMap;
+use std::time::Duration;
 
-// fn main() {
-//     // 初始化Map（每60秒全局清理一次）
-//     let map = ExpirableMap::new(Duration::from_secs(60));
+#[test]
+fn test_set_and_get() {
+    let map = EasyMap::new(Duration::from_secs(60));
 
-//     // 插入永不过期的键
-//     map.set("config", "value123", None);
+    // 设置一个值，永不过期
+    map.set("key1".to_string(), "value1".to_string(), None);
 
-//     // 插入10秒后过期的键
-//     map.set("session_token", "abc123", Some(Duration::from_secs(10)));
+    // 获取值
+    assert_eq!(map.get(&"key1".to_string()), Some("value1".to_string()));
+}
 
-//     // 多线程并发写入
-//     let map_arc = Arc::new(map);
-//     let handles: Vec<_> = (0..4).map(|i| {
-//         let map_clone = map_arc.clone();
-//         std::thread::spawn(move || {
-//             map_clone.set(i, i * 2, Some(Duration::from_secs(i)));
-//         })
-//     }).collect();
+#[test]
+fn test_expired_entry() {
+    let map = EasyMap::new(Duration::from_secs(60));
 
-//     // 等待线程完成
-//     for h in handles {
-//         h.join().unwrap();
-//     }
+    // 设置一个 1 秒后过期的值
+    map.set(
+        "key2".to_string(),
+        "value2".to_string(),
+        Some(Duration::from_secs(1)),
+    );
 
-//     // 读取数据
-//     if let Some(val) = map_arc.get(&"config") {
-//         println!("Config value: {}", val);
-//     }
-// }
+    // 立即获取值，应该存在
+    assert_eq!(map.get(&"key2".to_string()), Some("value2".to_string()));
+
+    // 等待 2 秒后再次获取值，应该过期
+    std::thread::sleep(Duration::from_secs(2));
+
+    println!("test_expired_entry 4");
+    assert_eq!(map.get(&"key2".to_string()), None);
+    println!("test_expired_entry 5");
+}
+
+#[test]
+fn test_non_existent_key() {
+    let map: EasyMap<String, String> = EasyMap::new(Duration::from_secs(60));
+
+    // map.set("key2".to_string(), "value2".to_string(), None);
+
+    // 获取不存在的键
+    assert_eq!(map.get(&"non_existent".to_string()), None);
+}
