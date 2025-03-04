@@ -44,21 +44,25 @@ fn test_non_existent_key() {
 }
 
 #[test]
+#[ignore]
 fn test_background_cleanup() {
     let map = EasyMap::new(Duration::from_secs(1));
 
-    // 设置一个不过期的值
     map.set(
         "key2".to_string(),
         "value2".to_string(),
-        Some(Duration::from_secs(1)),
+        Some(Duration::from_secs(30)),
     );
 
-    // 立即获取值，应该存在
-    assert_eq!(map.get(&"key2".to_string()), Some("value2".to_string()));
+    // 20秒后key应该还在
+    std::thread::sleep(Duration::from_secs(20));
+    assert_eq!(map.is_exist(&"key2".to_string()), true);
 
-    // 等待 2 秒后再次获取值，应该过期
-    std::thread::sleep(Duration::from_secs(3));
+    // 又过20秒后，虽然key超时了，但由于还未到后台清理时间，所以key还在
+    std::thread::sleep(Duration::from_secs(20));
+    assert_eq!(map.is_exist(&"key2".to_string()), true);
 
-    assert_eq!(map.get(&"key2".to_string()), None);
+    // 又过了35秒，此时后台清理线程应该执行了清理动作，key应该不存在了
+    std::thread::sleep(Duration::from_secs(35));
+    assert_eq!(map.is_exist(&"key2".to_string()), false);
 }

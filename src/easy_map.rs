@@ -83,6 +83,14 @@ where
             }
         })
     }
+
+    /// 判断key是否存在
+    pub fn is_exist(&self, key: &K) -> bool
+    where
+        V: Clone,
+    {
+        return self.data.contains_key(key);
+    }
 }
 
 impl<K, V> Drop for EasyMap<K, V>
