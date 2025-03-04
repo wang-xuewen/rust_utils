@@ -24,6 +24,7 @@ where
 {
     /// 创建新Map并启动后台清理线程
     /// cleanup_interval：启动清理过期key的间隔，如果小于1分钟，则会默认设置为1分钟
+    /// 这个值应当适当设置大一些，用于一些很久没使用的但过期了的key的清楚，释放内存
     /// eg. let map = EasyMap::new(Duration::from_secs(60));
     pub fn new(cleanup_interval: Duration) -> Self {
         // let cleanup_interval = if cleanup_interval < Duration::from_secs(60) {
@@ -50,7 +51,6 @@ where
                 // 使用下划线前缀表示该变量在闭包逻辑中未被使用（避免编译器警告
                 // 返回true的条目保留，否则被移除
                 data_clone.retain(|_k, entry: &mut Entry<V>| {
-                    println!("============3=");
                     // 显式标注 entry 类型
                     entry.expires_at.map_or(true, |t| now < t)
                 });
@@ -73,11 +73,12 @@ where
     {
         self.data.get(key).and_then(|entry| {
             if entry.expires_at.map_or(false, |t| SystemTime::now() >= t) {
+                // 这里必须先drop之后（释放读锁）再remove，
+                // 否则会一直阻塞。
+                drop(entry);
                 self.data.remove(key);
-                println!("============1=");
                 None
             } else {
-                println!("============2=");
                 Some(entry.value.clone())
             }
         })

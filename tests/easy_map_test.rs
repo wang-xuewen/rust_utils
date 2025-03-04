@@ -30,9 +30,7 @@ fn test_expired_entry() {
     // 等待 2 秒后再次获取值，应该过期
     std::thread::sleep(Duration::from_secs(2));
 
-    println!("test_expired_entry 4");
     assert_eq!(map.get(&"key2".to_string()), None);
-    println!("test_expired_entry 5");
 }
 
 #[test]
@@ -43,4 +41,24 @@ fn test_non_existent_key() {
 
     // 获取不存在的键
     assert_eq!(map.get(&"non_existent".to_string()), None);
+}
+
+#[test]
+fn test_background_cleanup() {
+    let map = EasyMap::new(Duration::from_secs(1));
+
+    // 设置一个不过期的值
+    map.set(
+        "key2".to_string(),
+        "value2".to_string(),
+        Some(Duration::from_secs(1)),
+    );
+
+    // 立即获取值，应该存在
+    assert_eq!(map.get(&"key2".to_string()), Some("value2".to_string()));
+
+    // 等待 2 秒后再次获取值，应该过期
+    std::thread::sleep(Duration::from_secs(3));
+
+    assert_eq!(map.get(&"key2".to_string()), None);
 }
